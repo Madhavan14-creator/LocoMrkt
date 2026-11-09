@@ -39,76 +39,67 @@ export default function App() {
       name: "Corner Bakery & Cafe",
       category: "Bakery",
       description: "Artisan breads, fresh pastries, and warm filter coffee.",
-      location: "Downtown",
+      location: "Malleshwaram, 8th Main",
       rating: 4.8,
       deliveryTime: "10 MINS",
       phone: "+91 98123 45678",
-      items: [
-        { id: 101, itemName: "Sourdough Bread", price: 140 },
-        { id: 102, itemName: "Chocolate Croissant", price: 90 },
-        { id: 103, itemName: "Cold Brew Coffee", price: 120 },
-      ]
+      items: []
     },
     {
       id: 2,
       name: "Fresh Basket Organics",
       category: "Groceries",
       description: "Farm-fresh vegetables, organic fruits, and dairy.",
-      location: "Westside",
+      location: "Jayanagar, 4th Block",
       rating: 4.9,
       deliveryTime: "15 MINS",
       phone: "+91 98234 56789",
-      items: [
-        { id: 201, itemName: "Organic Avocados (Pack of 2)", price: 180 },
-        { id: 202, itemName: "Fresh Cow Milk (1L)", price: 65 },
-        { id: 203, itemName: "Brown Eggs (6 pcs)", price: 75 },
-      ]
+      items: []
     },
     {
       id: 3,
       name: "QuickFix Auto Repair",
       category: "Services",
       description: "Emergency car maintenance and quick oil changes.",
-      location: "Industrial Park",
+      location: "Indiranagar, 100ft Road",
       rating: 4.7,
       deliveryTime: "SAME DAY",
       phone: "+91 98345 67890",
-      items: [
-        { id: 301, itemName: "Full Car Wash & Polish", price: 499 },
-        { id: 302, itemName: "Engine Oil Check & Top-up", price: 799 },
-        { id: 303, itemName: "Tire Pressure & Alignment", price: 299 },
-      ]
+      items: []
     },
     {
       id: 4,
       name: "Urban Threads Boutique",
       category: "Fashion",
       description: "Sustainable local fashion and handmade accessories.",
-      location: "Main Street",
+      location: "Commercial Street, Shivajinagar",
       rating: 4.6,
       deliveryTime: "30 MINS",
       phone: "+91 98456 78901",
-      items: [
-        { id: 401, itemName: "Cotton Graphic Tee", price: 599 },
-        { id: 402, itemName: "Handcrafted Tote Bag", price: 349 },
-        { id: 403, itemName: "Denim Jacket", price: 1299 },
-      ]
+      items: []
     },
     {
       id: 5,
       name: "TechZone Gadgets",
       category: "Electronics",
       description: "Phone repairs, fast chargers, and smart home gear.",
-      location: "Tech Hub",
+      location: "Koramangala, 5th Block",
       rating: 4.5,
       deliveryTime: "20 MINS",
       phone: "+91 98567 89012",
-      items: [
-        { id: 501, itemName: "Type-C Fast Charging Cable", price: 299 },
-        { id: 502, itemName: "Bluetooth Earbuds", price: 1499 },
-        { id: 503, itemName: "Tempered Glass Guard", price: 199 },
-      ]
+      items: []
     },
+    {
+      id: 6,
+      name: "Heritage Spices & Goods",
+      category: "Groceries",
+      description: "Traditional South Indian podis, pickles, and dry fruits.",
+      location: "Gandhi Bazaar, Basavanagudi",
+      rating: 4.9,
+      deliveryTime: "15 MINS",
+      phone: "+91 98678 90123",
+      items: []
+    }
   ];
 
   const handleUpdateQuantity = (item, delta) => {
@@ -153,7 +144,8 @@ export default function App() {
     const matchesSearch =
       vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vendor.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vendor.description.toLowerCase().includes(searchTerm.toLowerCase());
+      vendor.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vendor.location.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesCategory =
       selectedCategory === "All" || vendor.category === selectedCategory;
@@ -187,7 +179,7 @@ export default function App() {
 
           <div className="mb-4 flex items-center justify-between border-b border-gray-800 pb-2">
             <h2 className="text-xl font-black text-white tracking-tight">
-              {isMerchantMode ? "Store Management Portal" : "Community Vendors"}
+              {isMerchantMode ? "Store Management Portal" : "Bengaluru Community Vendors"}
             </h2>
             <span className="text-xs font-bold text-red-500">
               {filteredVendors.length} STORES ONLINE
@@ -204,7 +196,7 @@ export default function App() {
                 />
               ))
             ) : (
-              <div className="col-span-full text-center py-12 bg-gray-900 rounded-2xl border border-blue-900/40">
+              <div className="col-span-full text-center py-12 bg-gray-900 rounded-2xl border border-purple-900/40">
                 <p className="text-gray-400 font-bold">No stores found matching your query.</p>
                 <button
                   onClick={() => { setSearchTerm(""); setSelectedCategory("All"); }}
@@ -223,15 +215,8 @@ export default function App() {
         onClose={() => setSelectedVendor(null)}
         cart={cart}
         onUpdateQuantity={handleUpdateQuantity}
-      
-  vendor={selectedVendor}
-  onClose={() => setSelectedVendor(null)}
-  cart={cart}
-  onUpdateQuantity={handleUpdateQuantity}
-  isMerchantMode={isMerchantMode}
-/>
-        
-  
+        isMerchantMode={isMerchantMode}
+      />
 
       <CartDrawer
         isOpen={isCartOpen}
