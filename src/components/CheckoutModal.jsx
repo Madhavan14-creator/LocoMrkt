@@ -1,6 +1,7 @@
-﻿import React from "react";
+﻿import React, { useState } from "react";
 
 export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder }) {
+  const [paymentMethod, setPaymentMethod] = useState("COD");
   if (!isOpen) return null;
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -9,18 +10,18 @@ export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-gray-900 border border-purple-950 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-gray-900 border border-purple-950 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-900 via-blue-900 to-black p-6 text-center border-b border-purple-900/40">
-          <div className="w-12 h-12 bg-red-600/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-2 text-xl font-bold border border-red-500/30">
+        <div className="bg-purple-950/80 p-6 text-center border-b border-purple-900/40">
+          <div className="w-10 h-10 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-2 text-lg font-bold border border-green-500/30">
             ✓
           </div>
-          <h3 className="text-xl font-black text-white tracking-tight">Order Confirmed!</h3>
-          <p className="text-xs text-purple-200 mt-1">Thank you for ordering on LocoMrkt</p>
+          <h3 className="text-xl font-bold text-white tracking-tight">Order Receipt</h3>
+          <p className="text-xs text-purple-200 mt-0.5">LocoMrkt Community Network</p>
         </div>
 
-        {/* Receipt Content */}
+        {/* Content */}
         <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
           <div className="flex justify-between items-center text-xs text-gray-400 bg-gray-950 p-3 rounded-xl border border-gray-800">
             <div>
@@ -28,13 +29,13 @@ export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder }
               <span className="font-mono text-white font-bold">{orderId}</span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold block text-gray-500">Est. Delivery</span>
-              <span className="text-blue-400 font-bold">12-15 MINS ⚡</span>
+              <span className="text-[10px] uppercase font-bold block text-gray-500">Delivery Status</span>
+              <span className="text-blue-400 font-bold">Store Notified</span>
             </div>
           </div>
 
           <div>
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Item Summary</h4>
+            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Order Items</h4>
             <div className="space-y-2 bg-gray-950 p-3 rounded-xl border border-gray-800">
               {cart.map((item) => (
                 <div key={item.id} className="flex justify-between text-xs text-gray-300">
@@ -42,29 +43,39 @@ export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder }
                   <span className="text-white font-bold">₹{item.price * item.quantity}</span>
                 </div>
               ))}
-              <div className="pt-2 border-t border-gray-800 flex justify-between text-xs text-gray-400">
-                <span>Subtotal ({totalItemsCount} items)</span>
-                <span className="text-white font-bold">₹{subtotal}</span>
-              </div>
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>Delivery Fee</span>
-                <span className="text-blue-400 font-bold">FREE</span>
-              </div>
-              <div className="flex justify-between text-sm font-black text-white pt-2 border-t border-gray-800">
-                <span>Total Paid</span>
+              <div className="pt-2 border-t border-gray-800 flex justify-between text-xs font-bold text-white">
+                <span>Total Amount</span>
                 <span className="text-red-500">₹{subtotal}</span>
               </div>
             </div>
           </div>
 
-          <div className="text-[11px] text-gray-400 bg-gray-950 p-3 rounded-xl border border-gray-800 space-y-1">
-            <div className="flex justify-between">
-              <span>Delivery Address:</span>
-              <span className="text-white font-medium">Downtown Marketplace, Main St</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Powered by:</span>
-              <span className="text-purple-300 font-bold">RMCUBE</span>
+          {/* Simple Payment Selection */}
+          <div>
+            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Payment Option</h4>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("COD")}
+                className={`p-2.5 rounded-xl border font-bold text-center transition ${
+                  paymentMethod === "COD"
+                    ? "bg-purple-950 border-purple-600 text-white"
+                    : "bg-gray-950 border-gray-800 text-gray-400 hover:text-white"
+                }`}
+              >
+                💵 Cash on Delivery
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("UPI")}
+                className={`p-2.5 rounded-xl border font-bold text-center transition ${
+                  paymentMethod === "UPI"
+                    ? "bg-purple-950 border-purple-600 text-white"
+                    : "bg-gray-950 border-gray-800 text-gray-400 hover:text-white"
+                }`}
+              >
+                📱 Pay via UPI
+              </button>
             </div>
           </div>
         </div>
@@ -73,9 +84,9 @@ export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder }
         <div className="p-4 bg-gray-950 border-t border-gray-800">
           <button
             onClick={onCompleteOrder}
-            className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs shadow-lg shadow-red-900/50 transition uppercase tracking-wider"
+            className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition uppercase tracking-wider"
           >
-            Back to Marketplace
+            Confirm & Return to Directory
           </button>
         </div>
 
