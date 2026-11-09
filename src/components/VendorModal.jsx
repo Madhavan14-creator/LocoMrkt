@@ -74,7 +74,25 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
 
         {/* Modal Body */}
         <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-          
+          <p className="text-xs text-gray-300 leading-relaxed">
+            {vendor.description}
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="bg-gray-950 p-2.5 rounded-xl border border-gray-800">
+              <span className="text-gray-500 font-bold uppercase block text-[10px]">Delivery Time</span>
+              <span className="text-blue-400 font-extrabold text-xs mt-0.5 block">
+                ⚡ {vendor.deliveryTime || "15 MINS"}
+              </span>
+            </div>
+            <div className="bg-gray-950 p-2.5 rounded-xl border border-gray-800">
+              <span className="text-gray-500 font-bold uppercase block text-[10px]">Rating</span>
+              <span className="text-red-400 font-extrabold text-xs mt-0.5 block">
+                ★ {vendor.rating} / 5.0
+              </span>
+            </div>
+          </div>
+
           {/* Quick Direct Actions for Customers */}
           {!isMerchantMode && (
             <div className="flex gap-2">
@@ -126,7 +144,7 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
             </form>
           )}
 
-          {/* Product Items List */}
+          {/* Product Items List (Shown for both Customer & Merchant) */}
           <div className="pt-2">
             <h4 className="text-xs font-black text-purple-300 uppercase tracking-wider mb-2">
               {isMerchantMode ? "Inventory & Stock Management" : "Popular Items"}
@@ -158,6 +176,7 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
                     {/* Merchant Stock Controls */}
                     {isMerchantMode ? (
                       <button
+                        type="button"
                         onClick={() => toggleStock(item.id)}
                         className={`text-[10px] font-black px-3 py-1.5 rounded-lg transition border uppercase ${
                           item.outOfStock
@@ -173,6 +192,7 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
                         <span className="text-[11px] text-gray-500 font-bold italic">Unavailable</span>
                       ) : qty === 0 ? (
                         <button
+                          type="button"
                           onClick={() =>
                             onUpdateQuantity({
                               ...item,
@@ -187,6 +207,7 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
                       ) : (
                         <div className="flex items-center bg-gray-900 border border-blue-600 rounded-lg overflow-hidden">
                           <button
+                            type="button"
                             onClick={() =>
                               onUpdateQuantity({
                                 ...item,
@@ -202,6 +223,7 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
                             {qty}
                           </span>
                           <button
+                            type="button"
                             onClick={() =>
                               onUpdateQuantity({
                                 ...item,
@@ -222,7 +244,19 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
             </div>
           </div>
 
+          <div className="space-y-1.5 text-[11px] text-gray-400 pt-3 border-t border-gray-800">
+            <div className="flex justify-between">
+              <span>📍 Location:</span>
+              <span className="text-white font-medium">{vendor.location}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>🕒 Hours:</span>
+              <span className="text-white font-medium">8:00 AM – 10:00 PM</span>
+            </div>
+          </div>
+
           <button
+            type="button"
             onClick={onClose}
             className="w-full py-2.5 rounded-xl border border-gray-700 text-gray-300 font-bold text-xs hover:bg-gray-800 transition uppercase"
           >

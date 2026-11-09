@@ -231,7 +231,7 @@ export default function App() {
   isMerchantMode={isMerchantMode}
 />
         
-      />
+  
 
       <CartDrawer
         isOpen={isCartOpen}
