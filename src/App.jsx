@@ -223,6 +223,14 @@ export default function App() {
         onClose={() => setSelectedVendor(null)}
         cart={cart}
         onUpdateQuantity={handleUpdateQuantity}
+      
+  vendor={selectedVendor}
+  onClose={() => setSelectedVendor(null)}
+  cart={cart}
+  onUpdateQuantity={handleUpdateQuantity}
+  isMerchantMode={isMerchantMode}
+/>
+        
       />
 
       <CartDrawer
