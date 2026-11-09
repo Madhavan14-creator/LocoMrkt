@@ -41,7 +41,7 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-gray-900 border border-blue-900/60 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-gray-900 border border-blue-900/60 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
         
         {/* Banner Header */}
         <div className={`h-32 p-6 flex justify-between items-start relative ${
@@ -144,103 +144,114 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
             </form>
           )}
 
-          {/* Product Items List (Shown for both Customer & Merchant) */}
+          {/* Product Items List */}
           <div className="pt-2">
             <h4 className="text-xs font-black text-purple-300 uppercase tracking-wider mb-2">
-              {isMerchantMode ? "Inventory & Stock Management" : "Popular Items"}
+              {isMerchantMode ? "Inventory & Stock Management" : "Popular Items & Menu"}
             </h4>
             <div className="space-y-2">
-              {items.map((item) => {
-                const qty = getItemQuantity(item.id);
-                return (
-                  <div 
-                    key={item.id}
-                    className={`bg-gray-950 p-3 rounded-xl border flex items-center justify-between transition ${
-                      item.outOfStock ? "border-red-900/40 opacity-60" : "border-gray-800"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h5 className="font-bold text-white text-xs">{item.itemName}</h5>
-                        {item.outOfStock && (
-                          <span className="text-[9px] bg-red-950 text-red-400 border border-red-800 px-1.5 py-0.5 rounded font-black uppercase">
-                            Out of Stock
-                          </span>
-                        )}
+              {items && items.length > 0 ? (
+                items.map((item) => {
+                  const displayItemName = item.itemName || item.name || "Unnamed Item";
+                  const qty = getItemQuantity(item.id);
+                  return (
+                    <div 
+                      key={item.id}
+                      className={`bg-gray-950 p-3 rounded-xl border flex items-center justify-between transition ${
+                        item.outOfStock ? "border-red-900/40 opacity-60" : "border-gray-800"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h5 className="font-bold text-white text-xs">{displayItemName}</h5>
+                          {item.outOfStock && (
+                            <span className="text-[9px] bg-red-950 text-red-400 border border-red-800 px-1.5 py-0.5 rounded font-black uppercase">
+                              Out of Stock
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-red-400 font-black block mt-0.5">
+                          ₹{item.price}
+                        </span>
                       </div>
-                      <span className="text-xs text-red-400 font-black block mt-0.5">
-                        ₹{item.price}
-                      </span>
-                    </div>
 
-                    {/* Merchant Stock Controls */}
-                    {isMerchantMode ? (
-                      <button
-                        type="button"
-                        onClick={() => toggleStock(item.id)}
-                        className={`text-[10px] font-black px-3 py-1.5 rounded-lg transition border uppercase ${
-                          item.outOfStock
-                            ? "bg-green-950 text-green-400 border-green-800 hover:bg-green-900"
-                            : "bg-red-950 text-red-400 border-red-800 hover:bg-red-900"
-                        }`}
-                      >
-                        {item.outOfStock ? "Mark In Stock" : "Mark Out of Stock"}
-                      </button>
-                    ) : (
-                      /* Customer Cart Controls */
-                      item.outOfStock ? (
-                        <span className="text-[11px] text-gray-500 font-bold italic">Unavailable</span>
-                      ) : qty === 0 ? (
+                      {/* Merchant Stock Controls */}
+                      {isMerchantMode ? (
                         <button
                           type="button"
-                          onClick={() =>
-                            onUpdateQuantity({
-                              ...item,
-                              storeName: vendor.name,
-                              category: vendor.category,
-                            }, 1)
-                          }
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition uppercase"
+                          onClick={() => toggleStock(item.id)}
+                          className={`text-[10px] font-black px-3 py-1.5 rounded-lg transition border uppercase ${
+                            item.outOfStock
+                              ? "bg-green-950 text-green-400 border-green-800 hover:bg-green-900"
+                              : "bg-red-950 text-red-400 border-red-800 hover:bg-red-900"
+                          }`}
                         >
-                          + Add
+                          {item.outOfStock ? "Mark In Stock" : "Mark Out of Stock"}
                         </button>
                       ) : (
-                        <div className="flex items-center bg-gray-900 border border-blue-600 rounded-lg overflow-hidden">
+                        /* Customer Cart Controls */
+                        item.outOfStock ? (
+                          <span className="text-[11px] text-gray-500 font-bold italic">Unavailable</span>
+                        ) : qty === 0 ? (
                           <button
                             type="button"
                             onClick={() =>
                               onUpdateQuantity({
-                                ...item,
-                                storeName: vendor.name,
-                                category: vendor.category,
-                              }, -1)
-                            }
-                            className="px-2.5 py-1 bg-red-950/60 text-red-400 hover:bg-red-600 hover:text-white font-black text-xs transition"
-                          >
-                            -
-                          </button>
-                          <span className="px-3 text-white text-xs font-black">
-                            {qty}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              onUpdateQuantity({
-                                ...item,
+                                id: item.id,
+                                itemName: displayItemName,
+                                price: item.price,
                                 storeName: vendor.name,
                                 category: vendor.category,
                               }, 1)
                             }
-                            className="px-2.5 py-1 bg-blue-950/60 text-blue-400 hover:bg-blue-600 hover:text-white font-black text-xs transition"
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition uppercase"
                           >
-                            +
+                            + Add
                           </button>
-                        </div>
-                      )
-                    )}
-                  </div>
-                );
-              })}
+                        ) : (
+                          <div className="flex items-center bg-gray-900 border border-blue-600 rounded-lg overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                onUpdateQuantity({
+                                  id: item.id,
+                                  itemName: displayItemName,
+                                  price: item.price,
+                                  storeName: vendor.name,
+                                  category: vendor.category,
+                                }, -1)
+                              }
+                              className="px-2.5 py-1 bg-red-950/60 text-red-400 hover:bg-red-600 hover:text-white font-black text-xs transition"
+                            >
+                              -
+                            </button>
+                            <span className="px-3 text-white text-xs font-black">
+                              {qty}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                onUpdateQuantity({
+                                  id: item.id,
+                                  itemName: displayItemName,
+                                  price: item.price,
+                                  storeName: vendor.name,
+                                  category: vendor.category,
+                                }, 1)
+                              }
+                              className="px-2.5 py-1 bg-blue-950/60 text-blue-400 hover:bg-blue-600 hover:text-white font-black text-xs transition"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-xs text-gray-500 italic py-2 text-center">No items listed for this store yet.</p>
+              )}
             </div>
           </div>
 
@@ -248,10 +259,6 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
             <div className="flex justify-between">
               <span>📍 Location:</span>
               <span className="text-white font-medium">{vendor.location}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>🕒 Hours:</span>
-              <span className="text-white font-medium">8:00 AM – 10:00 PM</span>
             </div>
           </div>
 
