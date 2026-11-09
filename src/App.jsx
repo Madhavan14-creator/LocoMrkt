@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import SearchBar from "./components/SearchBar";
 import VendorCard from "./components/VendorCard";
@@ -10,9 +10,27 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedVendor, setSelectedVendor] = useState(null);
-  const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  // Initialize cart from localStorage so items persist on refresh
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem("locomrkt_cart");
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Sync cart changes with localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("locomrkt_cart", JSON.stringify(cart));
+    } catch (err) {
+      console.error("Could not save cart to localStorage", err);
+    }
+  }, [cart]);
 
   const vendors = [
     {
@@ -23,6 +41,7 @@ export default function App() {
       location: "Downtown",
       rating: 4.8,
       deliveryTime: "10 MINS",
+      phone: "+91 98123 45678",
       items: [
         { id: 101, itemName: "Sourdough Bread", price: 140 },
         { id: 102, itemName: "Chocolate Croissant", price: 90 },
@@ -37,6 +56,7 @@ export default function App() {
       location: "Westside",
       rating: 4.9,
       deliveryTime: "15 MINS",
+      phone: "+91 98234 56789",
       items: [
         { id: 201, itemName: "Organic Avocados (Pack of 2)", price: 180 },
         { id: 202, itemName: "Fresh Cow Milk (1L)", price: 65 },
@@ -51,6 +71,7 @@ export default function App() {
       location: "Industrial Park",
       rating: 4.7,
       deliveryTime: "SAME DAY",
+      phone: "+91 98345 67890",
       items: [
         { id: 301, itemName: "Full Car Wash & Polish", price: 499 },
         { id: 302, itemName: "Engine Oil Check & Top-up", price: 799 },
@@ -65,6 +86,7 @@ export default function App() {
       location: "Main Street",
       rating: 4.6,
       deliveryTime: "30 MINS",
+      phone: "+91 98456 78901",
       items: [
         { id: 401, itemName: "Cotton Graphic Tee", price: 599 },
         { id: 402, itemName: "Handcrafted Tote Bag", price: 349 },
@@ -79,6 +101,7 @@ export default function App() {
       location: "Tech Hub",
       rating: 4.5,
       deliveryTime: "20 MINS",
+      phone: "+91 98567 89012",
       items: [
         { id: 501, itemName: "Type-C Fast Charging Cable", price: 299 },
         { id: 502, itemName: "Bluetooth Earbuds", price: 1499 },
@@ -151,10 +174,10 @@ export default function App() {
 
           <div className="mb-4 flex items-center justify-between border-b border-gray-800 pb-2">
             <h2 className="text-xl font-black text-white tracking-tight">
-              Stores near you
+              Community Vendors
             </h2>
             <span className="text-xs font-bold text-red-500">
-              {filteredVendors.length} STORES AVAILABLE
+              {filteredVendors.length} STORES ONLINE
             </span>
           </div>
 
