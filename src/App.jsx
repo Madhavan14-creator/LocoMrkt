@@ -12,6 +12,7 @@ export default function App() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isMerchantMode, setIsMerchantMode] = useState(false);
 
   // Initialize cart from localStorage so items persist on refresh
   const [cart, setCart] = useState(() => {
@@ -163,7 +164,19 @@ export default function App() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col justify-between font-sans">
       <div>
-        <Navbar cartCount={totalCartCount} onOpenCart={() => setIsCartOpen(true)} />
+        <Navbar
+          cartCount={totalCartCount}
+          onOpenCart={() => setIsCartOpen(true)}
+          isMerchantMode={isMerchantMode}
+          setIsMerchantMode={setIsMerchantMode}
+        />
+
+        {isMerchantMode && (
+          <div className="bg-amber-500 text-black px-4 py-2 text-center text-xs font-black uppercase tracking-wider">
+            ⚡ Merchant View Enabled — Viewing direct shopkeeper operational controls
+          </div>
+        )}
+
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <SearchBar
             searchTerm={searchTerm}
@@ -174,7 +187,7 @@ export default function App() {
 
           <div className="mb-4 flex items-center justify-between border-b border-gray-800 pb-2">
             <h2 className="text-xl font-black text-white tracking-tight">
-              Community Vendors
+              {isMerchantMode ? "Store Management Portal" : "Community Vendors"}
             </h2>
             <span className="text-xs font-bold text-red-500">
               {filteredVendors.length} STORES ONLINE
