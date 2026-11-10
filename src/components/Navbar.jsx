@@ -1,6 +1,6 @@
 ﻿import React from "react";
 
-export default function Navbar({ cartCount, onOpenCart, isMerchantMode, setIsMerchantMode }) {
+export default function Navbar({ cartCount, onOpenCart }) {
   return (
     <header className="bg-gray-950 border-b border-purple-950 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -23,35 +23,18 @@ export default function Navbar({ cartCount, onOpenCart, isMerchantMode, setIsMer
           </div>
         </div>
 
-        {/* Right Action Controls */}
-        <div className="flex items-center space-x-3">
-          
-          {/* Simple Merchant Mode Switch */}
-          <button
-            onClick={() => setIsMerchantMode(!isMerchantMode)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 ${
-              isMerchantMode
-                ? "bg-amber-950/80 border-amber-500 text-amber-300"
-                : "bg-gray-900 border-gray-800 text-gray-400 hover:text-white"
-            }`}
-          >
-            <span>{isMerchantMode ? "🏪 Merchant View" : "🛒 Customer View"}</span>
-          </button>
-
-          {/* Cart Button */}
-          <button
-            onClick={onOpenCart}
-            className="relative bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-2 shadow-lg shadow-red-900/30"
-          >
-            <span>Cart</span>
-            {cartCount > 0 && (
-              <span className="bg-white text-red-600 font-black text-[11px] w-5 h-5 rounded-full flex items-center justify-center ml-1">
-                {cartCount}
-              </span>
-            )}
-          </button>
-
-        </div>
+        {/* Cart Button */}
+        <button
+          onClick={onOpenCart}
+          className="relative bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-2 shadow-lg shadow-red-900/30"
+        >
+          <span>Cart</span>
+          {cartCount > 0 && (
+            <span className="bg-white text-red-600 font-black text-[11px] w-5 h-5 rounded-full flex items-center justify-center ml-1">
+              {cartCount}
+            </span>
+          )}
+        </button>
 
       </div>
     </header>

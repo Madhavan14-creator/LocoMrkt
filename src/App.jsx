@@ -12,7 +12,6 @@ export default function App() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isMerchantMode, setIsMerchantMode] = useState(false);
 
   // Initialize cart from localStorage so items persist on refresh
   const [cart, setCart] = useState(() => {
@@ -36,69 +35,95 @@ export default function App() {
   const vendors = [
     {
       id: 1,
-      name: "Corner Bakery & Cafe",
+      name: "Iyengar Bakery & Sweets",
       category: "Bakery",
-      description: "Artisan breads, fresh pastries, and warm filter coffee.",
+      description: "Authentic Bengaluru butter biscuits, spicy bread roast, and fresh puffs.",
       location: "Malleshwaram, 8th Main",
-      rating: 4.8,
-      deliveryTime: "10 MINS",
-      phone: "+91 98123 45678",
-      items: []
+      rating: 4.9,
+      deliveryTime: "15 MINS",
+      phone: "+91 98450 12345",
+      items: [
+        { id: 101, itemName: "Special Milk Bread", price: 45 },
+        { id: 102, itemName: "Khara Biscuit (250g)", price: 80 },
+        { id: 103, itemName: "Capsicum Veg Puff", price: 25 },
+        { id: 104, itemName: "Filter Coffee Powder (200g)", price: 140 },
+      ]
     },
     {
       id: 2,
-      name: "Fresh Basket Organics",
+      name: "Sri Manjunatha Organics",
       category: "Groceries",
-      description: "Farm-fresh vegetables, organic fruits, and dairy.",
+      description: "Fresh Karnataka farm produce, organic pulses, and Desi A2 milk.",
       location: "Jayanagar, 4th Block",
-      rating: 4.9,
-      deliveryTime: "15 MINS",
-      phone: "+91 98234 56789",
-      items: []
+      rating: 4.8,
+      deliveryTime: "20 MINS",
+      phone: "+91 98801 23456",
+      items: [
+        { id: 201, itemName: "Fresh Nanjanagud Bananas (1kg)", price: 60 },
+        { id: 202, itemName: "Nandi Farm Cow Milk (1L)", price: 54 },
+        { id: 203, itemName: "Organic Toor Dal (1kg)", price: 165 },
+        { id: 204, itemName: "Byadgi Red Chillies (250g)", price: 95 },
+      ]
     },
     {
       id: 3,
-      name: "QuickFix Auto Repair",
+      name: "Namma Auto & Bike Clinic",
       category: "Services",
-      description: "Emergency car maintenance and quick oil changes.",
+      description: "Quick two-wheeler servicing, puncture repair, and oil change.",
       location: "Indiranagar, 100ft Road",
       rating: 4.7,
       deliveryTime: "SAME DAY",
-      phone: "+91 98345 67890",
-      items: []
+      phone: "+91 99002 34567",
+      items: [
+        { id: 301, itemName: "Scooter General Service", price: 499 },
+        { id: 302, itemName: "Tubeless Puncture Fix", price: 120 },
+        { id: 303, itemName: "Castrol Engine Oil (1L)", price: 380 },
+      ]
     },
     {
       id: 4,
-      name: "Urban Threads Boutique",
+      name: "Commercial Street Silk & Cotton",
       category: "Fashion",
-      description: "Sustainable local fashion and handmade accessories.",
+      description: "Handloom cotton kurtis, traditional sarees, and tailor adjustments.",
       location: "Commercial Street, Shivajinagar",
       rating: 4.6,
       deliveryTime: "30 MINS",
-      phone: "+91 98456 78901",
-      items: []
+      phone: "+91 97403 45678",
+      items: [
+        { id: 401, itemName: "Block Print Cotton Kurti", price: 650 },
+        { id: 402, itemName: "Pure Linen Dupatta", price: 350 },
+        { id: 403, itemName: "Handmade Jute Tote", price: 280 },
+      ]
     },
     {
       id: 5,
-      name: "TechZone Gadgets",
+      name: "SP Road Electronics & Mobile Repair",
       category: "Electronics",
-      description: "Phone repairs, fast chargers, and smart home gear.",
-      location: "Koramangala, 5th Block",
-      rating: 4.5,
-      deliveryTime: "20 MINS",
-      phone: "+91 98567 89012",
-      items: []
+      description: "Instant phone screen replacement, cables, power banks, and accessories.",
+      location: "SP Road / Koramangala 5th Block",
+      rating: 4.8,
+      deliveryTime: "25 MINS",
+      phone: "+91 98444 56789",
+      items: [
+        { id: 501, itemName: "65W Type-C Fast Charger", price: 450 },
+        { id: 502, itemName: "Tempered Glass Screen Protector", price: 150 },
+        { id: 503, itemName: "10000mAh Power Bank", price: 899 },
+      ]
     },
     {
       id: 6,
-      name: "Heritage Spices & Goods",
+      name: "Subbamma Stores & Spices",
       category: "Groceries",
-      description: "Traditional South Indian podis, pickles, and dry fruits.",
+      description: "Traditional South Indian podis, pickles, and homemade papads.",
       location: "Gandhi Bazaar, Basavanagudi",
       rating: 4.9,
-      deliveryTime: "15 MINS",
-      phone: "+91 98678 90123",
-      items: []
+      deliveryTime: "20 MINS",
+      phone: "+91 98860 67890",
+      items: [
+        { id: 601, itemName: "Gunpowder / Chutney Pudi (200g)", price: 90 },
+        { id: 602, itemName: "Avakaya Mango Pickle (300g)", price: 130 },
+        { id: 603, itemName: "Rice Sandige / Vadam (250g)", price: 85 },
+      ]
     }
   ];
 
@@ -159,15 +184,7 @@ export default function App() {
         <Navbar
           cartCount={totalCartCount}
           onOpenCart={() => setIsCartOpen(true)}
-          isMerchantMode={isMerchantMode}
-          setIsMerchantMode={setIsMerchantMode}
         />
-
-        {isMerchantMode && (
-          <div className="bg-amber-500 text-black px-4 py-2 text-center text-xs font-black uppercase tracking-wider">
-            ⚡ Merchant View Enabled — Viewing direct shopkeeper operational controls
-          </div>
-        )}
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <SearchBar
@@ -179,7 +196,7 @@ export default function App() {
 
           <div className="mb-4 flex items-center justify-between border-b border-gray-800 pb-2">
             <h2 className="text-xl font-black text-white tracking-tight">
-              {isMerchantMode ? "Store Management Portal" : "Bengaluru Community Vendors"}
+              Bengaluru Community Vendors
             </h2>
             <span className="text-xs font-bold text-red-500">
               {filteredVendors.length} STORES ONLINE
@@ -215,7 +232,6 @@ export default function App() {
         onClose={() => setSelectedVendor(null)}
         cart={cart}
         onUpdateQuantity={handleUpdateQuantity}
-        isMerchantMode={isMerchantMode}
       />
 
       <CartDrawer

@@ -1,39 +1,11 @@
-﻿import React, { useState } from "react";
+﻿import React from "react";
 
-export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, isMerchantMode }) {
-  const [items, setItems] = useState(vendor?.items || []);
-  const [newItemName, setNewItemName] = useState("");
-  const [newItemPrice, setNewItemPrice] = useState("");
-
+export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity }) {
   if (!vendor) return null;
 
   const getItemQuantity = (itemId) => {
     const cartItem = cart.find((i) => i.id === itemId);
     return cartItem ? cartItem.quantity : 0;
-  };
-
-  const toggleStock = (itemId) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, outOfStock: !item.outOfStock } : item
-      )
-    );
-  };
-
-  const handleAddItem = (e) => {
-    e.preventDefault();
-    if (!newItemName.trim() || !newItemPrice) return;
-
-    const newItem = {
-      id: Date.now(),
-      itemName: newItemName,
-      price: Number(newItemPrice),
-      outOfStock: false,
-    };
-
-    setItems([...items, newItem]);
-    setNewItemName("");
-    setNewItemPrice("");
   };
 
   const storePhone = vendor.phone || "+91 98765 43210";
@@ -44,22 +16,11 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
       <div className="bg-gray-900 border border-blue-900/60 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
         
         {/* Banner Header */}
-        <div className={`h-32 p-6 flex justify-between items-start relative ${
-          isMerchantMode 
-            ? "bg-gradient-to-r from-amber-950 via-purple-950 to-black border-b border-amber-500/40" 
-            : "bg-gradient-to-r from-purple-900 via-blue-900 to-black"
-        }`}>
+        <div className="h-32 p-6 flex justify-between items-start relative bg-gradient-to-r from-purple-900 via-blue-900 to-black">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="bg-red-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-                {vendor.category}
-              </span>
-              {isMerchantMode && (
-                <span className="bg-amber-500 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  Merchant Control
-                </span>
-              )}
-            </div>
+            <span className="bg-red-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+              {vendor.category}
+            </span>
             <h3 className="text-2xl font-black text-white mt-2 leading-tight">
               {vendor.name}
             </h3>
@@ -94,163 +55,96 @@ export default function VendorModal({ vendor, onClose, cart, onUpdateQuantity, i
           </div>
 
           {/* Quick Direct Actions for Customers */}
-          {!isMerchantMode && (
-            <div className="flex gap-2">
-              <a
-                href={`tel:${storePhone.replace(/\s+/g, "")}`}
-                className="flex-1 py-2 bg-gray-950 hover:bg-gray-800 border border-gray-800 text-blue-400 text-center text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5"
-              >
-                📞 Call Shop
-              </a>
-              <a
-                href={`https://wa.me/${storePhone.replace(/[^0-9]/g, "")}?text=${whatsappMessage}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2 bg-gray-950 hover:bg-gray-800 border border-gray-800 text-green-400 text-center text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5"
-              >
-                💬 WhatsApp
-              </a>
-            </div>
-          )}
-
-          {/* Merchant Add Item Form */}
-          {isMerchantMode && (
-            <form onSubmit={handleAddItem} className="bg-gray-950 p-3 rounded-xl border border-amber-900/50 space-y-2">
-              <h4 className="text-xs font-black text-amber-400 uppercase tracking-wider">
-                + Add New Store Product
-              </h4>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Item Name"
-                  value={newItemName}
-                  onChange={(e) => setNewItemName(e.target.value)}
-                  className="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
-                />
-                <input
-                  type="number"
-                  placeholder="Price (₹)"
-                  value={newItemPrice}
-                  onChange={(e) => setNewItemPrice(e.target.value)}
-                  className="w-24 bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
-                />
-                <button
-                  type="submit"
-                  className="bg-amber-500 hover:bg-amber-600 text-black text-xs font-black px-3 py-1.5 rounded-lg transition uppercase"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
-          )}
+          <div className="flex gap-2">
+            <a
+              href={`tel:${storePhone.replace(/\s+/g, "")}`}
+              className="flex-1 py-2 bg-gray-950 hover:bg-gray-800 border border-gray-800 text-blue-400 text-center text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5"
+            >
+              📞 Call Shop
+            </a>
+            <a
+              href={`https://wa.me/${storePhone.replace(/[^0-9]/g, "")}?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2 bg-gray-950 hover:bg-gray-800 border border-gray-800 text-green-400 text-center text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5"
+            >
+              💬 WhatsApp
+            </a>
+          </div>
 
           {/* Product Items List */}
           <div className="pt-2">
             <h4 className="text-xs font-black text-purple-300 uppercase tracking-wider mb-2">
-              {isMerchantMode ? "Inventory & Stock Management" : "Popular Items & Menu"}
+              Popular Items & Menu
             </h4>
             <div className="space-y-2">
-              {items && items.length > 0 ? (
-                items.map((item) => {
-                  const displayItemName = item.itemName || item.name || "Unnamed Item";
+              {vendor.items && vendor.items.length > 0 ? (
+                vendor.items.map((item) => {
                   const qty = getItemQuantity(item.id);
                   return (
                     <div 
                       key={item.id}
-                      className={`bg-gray-950 p-3 rounded-xl border flex items-center justify-between transition ${
-                        item.outOfStock ? "border-red-900/40 opacity-60" : "border-gray-800"
-                      }`}
+                      className="bg-gray-950 p-3 rounded-xl border border-gray-800 flex items-center justify-between transition"
                     >
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h5 className="font-bold text-white text-xs">{displayItemName}</h5>
-                          {item.outOfStock && (
-                            <span className="text-[9px] bg-red-950 text-red-400 border border-red-800 px-1.5 py-0.5 rounded font-black uppercase">
-                              Out of Stock
-                            </span>
-                          )}
-                        </div>
+                        <h5 className="font-bold text-white text-xs">{item.itemName}</h5>
                         <span className="text-xs text-red-400 font-black block mt-0.5">
                           ₹{item.price}
                         </span>
                       </div>
 
-                      {/* Merchant Stock Controls */}
-                      {isMerchantMode ? (
+                      {qty === 0 ? (
                         <button
                           type="button"
-                          onClick={() => toggleStock(item.id)}
-                          className={`text-[10px] font-black px-3 py-1.5 rounded-lg transition border uppercase ${
-                            item.outOfStock
-                              ? "bg-green-950 text-green-400 border-green-800 hover:bg-green-900"
-                              : "bg-red-950 text-red-400 border-red-800 hover:bg-red-900"
-                          }`}
+                          onClick={() =>
+                            onUpdateQuantity({
+                              ...item,
+                              storeName: vendor.name,
+                              category: vendor.category,
+                            }, 1)
+                          }
+                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition uppercase"
                         >
-                          {item.outOfStock ? "Mark In Stock" : "Mark Out of Stock"}
+                          + Add
                         </button>
                       ) : (
-                        /* Customer Cart Controls */
-                        item.outOfStock ? (
-                          <span className="text-[11px] text-gray-500 font-bold italic">Unavailable</span>
-                        ) : qty === 0 ? (
+                        <div className="flex items-center bg-gray-900 border border-blue-600 rounded-lg overflow-hidden">
                           <button
                             type="button"
                             onClick={() =>
                               onUpdateQuantity({
-                                id: item.id,
-                                itemName: displayItemName,
-                                price: item.price,
+                                ...item,
+                                storeName: vendor.name,
+                                category: vendor.category,
+                              }, -1)
+                            }
+                            className="px-2.5 py-1 bg-red-950/60 text-red-400 hover:bg-red-600 hover:text-white font-black text-xs transition"
+                          >
+                            -
+                          </button>
+                          <span className="px-3 text-white text-xs font-black">
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onUpdateQuantity({
+                                ...item,
                                 storeName: vendor.name,
                                 category: vendor.category,
                               }, 1)
                             }
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition uppercase"
+                            className="px-2.5 py-1 bg-blue-950/60 text-blue-400 hover:bg-blue-600 hover:text-white font-black text-xs transition"
                           >
-                            + Add
+                            +
                           </button>
-                        ) : (
-                          <div className="flex items-center bg-gray-900 border border-blue-600 rounded-lg overflow-hidden">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                onUpdateQuantity({
-                                  id: item.id,
-                                  itemName: displayItemName,
-                                  price: item.price,
-                                  storeName: vendor.name,
-                                  category: vendor.category,
-                                }, -1)
-                              }
-                              className="px-2.5 py-1 bg-red-950/60 text-red-400 hover:bg-red-600 hover:text-white font-black text-xs transition"
-                            >
-                              -
-                            </button>
-                            <span className="px-3 text-white text-xs font-black">
-                              {qty}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                onUpdateQuantity({
-                                  id: item.id,
-                                  itemName: displayItemName,
-                                  price: item.price,
-                                  storeName: vendor.name,
-                                  category: vendor.category,
-                                }, 1)
-                              }
-                              className="px-2.5 py-1 bg-blue-950/60 text-blue-400 hover:bg-blue-600 hover:text-white font-black text-xs transition"
-                            >
-                              +
-                            </button>
-                          </div>
-                        )
+                        </div>
                       )}
                     </div>
                   );
                 })
               ) : (
-                <p className="text-xs text-gray-500 italic py-2 text-center">No items listed for this store yet.</p>
+                <p className="text-xs text-gray-500 italic py-2 text-center">No items listed for this store.</p>
               )}
             </div>
           </div>
