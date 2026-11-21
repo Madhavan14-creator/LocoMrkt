@@ -62,11 +62,12 @@ app.post("/api/orders", (req, res) => {
       address: address || "Local Pickup",
       paymentMethod: paymentMethod || "COD",
       items,
+      total: totalAmount,
       totalAmount,
-      status: "CONFIRMED",
-      createdAt: new Date().toISOString(),
+      status: "Preparing Order",
+      createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
-    orders.push(newOrder);
+    orders.unshift(newOrder);
     fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
     res.status(201).json({ message: "Order placed successfully", order: newOrder });
   } catch (err) {
@@ -82,6 +83,26 @@ app.get("/api/orders", (req, res) => {
   } catch (err) {
     console.error("GET /api/orders error:", err);
     res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
+app.patch("/api/orders/:orderId/status", (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const orders = JSON.parse(fs.readFileSync(ORDERS_FILE, "utf8"));
+    const idx = orders.findIndex((o) => o.orderId === orderId);
+    if (idx === -1) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    const flow = ["Preparing Order", "Out for Delivery", "Delivered"];
+    const currentIdx = flow.indexOf(orders[idx].status);
+    const nextStatus = flow[Math.min(currentIdx + 1, flow.length - 1)];
+    orders[idx] = { ...orders[idx], status: nextStatus };
+    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+    res.json({ message: "Order status updated", order: orders[idx] });
+  } catch (err) {
+    console.error("PATCH /api/orders/:orderId/status error:", err);
+    res.status(500).json({ error: "Failed to update order status" });
   }
 });
 

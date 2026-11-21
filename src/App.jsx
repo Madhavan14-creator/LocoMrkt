@@ -6,6 +6,8 @@ import VendorCard from "./components/VendorCard";
 import CartDrawer from "./components/CartDrawer";
 import CheckoutModal from "./components/CheckoutModal";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 // Fallback seed data (ready to swap with GET /api/vendors)
 const INITIAL_VENDORS = [
   {
@@ -25,8 +27,8 @@ const INITIAL_VENDORS = [
     ],
     reviews: [
       { id: 1, user: "Karthik R.", rating: 5, comment: "Freshly baked khara biscuits right out of the oven!" },
-      { id: 2, user: "Sneha M.", rating: 5, comment: "Best evening puffs in Malleshwaram." }
-    ]
+      { id: 2, user: "Sneha M.", rating: 5, comment: "Best evening puffs in Malleshwaram." },
+    ],
   },
   {
     id: 2,
@@ -44,8 +46,8 @@ const INITIAL_VENDORS = [
       { id: 204, itemName: "Byadgi Red Chillies (250g)", price: 95 },
     ],
     reviews: [
-      { id: 1, user: "Ananya S.", rating: 5, comment: "Super fresh farm produce delivered in 15 mins." }
-    ]
+      { id: 1, user: "Ananya S.", rating: 5, comment: "Super fresh farm produce delivered in 15 mins." },
+    ],
   },
   {
     id: 3,
@@ -61,7 +63,7 @@ const INITIAL_VENDORS = [
       { id: 302, itemName: "Tubeless Puncture Fix", price: 120 },
       { id: 303, itemName: "Castrol Engine Oil (1L)", price: 380 },
     ],
-    reviews: []
+    reviews: [],
   },
   {
     id: 4,
@@ -77,7 +79,7 @@ const INITIAL_VENDORS = [
       { id: 402, itemName: "Pure Linen Dupatta", price: 350 },
       { id: 403, itemName: "Handmade Jute Tote", price: 280 },
     ],
-    reviews: []
+    reviews: [],
   },
   {
     id: 5,
@@ -93,7 +95,7 @@ const INITIAL_VENDORS = [
       { id: 502, itemName: "Tempered Glass Screen Protector", price: 150 },
       { id: 503, itemName: "10000mAh Power Bank", price: 899 },
     ],
-    reviews: []
+    reviews: [],
   },
   {
     id: 6,
@@ -109,8 +111,8 @@ const INITIAL_VENDORS = [
       { id: 602, itemName: "Avakaya Mango Pickle (300g)", price: 130 },
       { id: 603, itemName: "Rice Sandige / Vadam (250g)", price: 85 },
     ],
-    reviews: []
-  }
+    reviews: [],
+  },
 ];
 
 // 1. Dynamic Store Detail Page (/store/:id) with Item Search, Live Reviews & Sticky Cart Bar
@@ -122,7 +124,7 @@ function StoreDetailPage({
   onAddReview,
   onOpenCart,
   totalCartCount,
-  totalCartAmount
+  totalCartAmount,
 }) {
   const { id } = useParams();
   const [itemQuery, setItemQuery] = useState("");
@@ -178,7 +180,7 @@ function StoreDetailPage({
       id: Date.now(),
       user: reviewerName.trim(),
       rating: Number(reviewRating),
-      comment: reviewComment.trim()
+      comment: reviewComment.trim(),
     });
     setReviewerName("");
     setReviewRating(5);
@@ -277,7 +279,7 @@ function StoreDetailPage({
                       onClick={() => onUpdateQuantity(item, -1)}
                       className="text-red-400 font-black px-2 hover:text-white cursor-pointer"
                     >
-                      −
+                      -
                     </button>
                     <span className="text-xs font-black text-white min-w-[16px] text-center">
                       {qty}
@@ -428,7 +430,7 @@ function OrdersPage({ orders, onAdvanceOrderStatus }) {
 
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 rounded-full text-xs font-black bg-green-950 text-green-400 border border-green-800/60">
-                    ● {order.status}
+                    • {order.status}
                   </span>
                   {order.status !== "Delivered" && (
                     <button
@@ -446,7 +448,7 @@ function OrdersPage({ orders, onAdvanceOrderStatus }) {
                 {order.items.map((item) => (
                   <div key={item.id} className="flex justify-between text-xs text-gray-300">
                     <span>
-                      {item.itemName} <span className="text-gray-500">× {item.quantity}</span>
+                      {item.itemName || item.name} <span className="text-gray-500">x{item.quantity}</span>
                     </span>
                     <span className="font-bold">₹{item.price * item.quantity}</span>
                   </div>
@@ -455,7 +457,7 @@ function OrdersPage({ orders, onAdvanceOrderStatus }) {
 
               <div className="pt-2 border-t border-gray-800 flex justify-between items-center text-sm font-black">
                 <span className="text-gray-400">Total Paid</span>
-                <span className="text-red-400">₹{order.total}</span>
+                <span className="text-red-400">₹{order.total ?? order.totalAmount}</span>
               </div>
             </div>
           ))}
@@ -474,14 +476,43 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [orders, setOrders] = useState([]);
 
-  // Simulate dynamic API fetch (Connectivity teammate will swap with fetch('/api/vendors'))
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setVendors(INITIAL_VENDORS);
-      setIsLoading(false);
-    }, 350);
-    return () => clearTimeout(timer);
+    let active = true;
+    fetch(`${API_BASE}/api/vendors`)
+      .then((res) => (res.ok ? res.json() : INITIAL_VENDORS))
+      .then((data) => {
+        if (active && Array.isArray(data) && data.length > 0) {
+          setVendors(data);
+        } else if (active) {
+          setVendors(INITIAL_VENDORS);
+        }
+      })
+      .catch(() => {
+        if (active) setVendors(INITIAL_VENDORS);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch(`${API_BASE}/api/orders`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (active && Array.isArray(data)) {
+          setOrders(data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Initialize cart from localStorage
@@ -489,16 +520,6 @@ export default function App() {
     try {
       const savedCart = localStorage.getItem("locomrkt_cart");
       return savedCart ? JSON.parse(savedCart) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  // Initialize orders from localStorage
-  const [orders, setOrders] = useState(() => {
-    try {
-      const savedOrders = localStorage.getItem("locomrkt_orders");
-      return savedOrders ? JSON.parse(savedOrders) : [];
     } catch {
       return [];
     }
@@ -512,14 +533,6 @@ export default function App() {
     }
   }, [cart]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem("locomrkt_orders", JSON.stringify(orders));
-    } catch (err) {
-      console.error("Could not save orders to localStorage", err);
-    }
-  }, [orders]);
-
   // Toast helper
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -530,26 +543,23 @@ export default function App() {
 
   const handleUpdateQuantity = (item, delta) => {
     if (delta > 0) {
-      showToast(`Added ${item.itemName} to cart`);
+      showToast(`Added ${item.itemName || item.name} to cart`);
     }
 
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex((i) => i.id === item.id);
-
       if (existingIndex > -1) {
         const updated = [...prevCart];
         const newQty = updated[existingIndex].quantity + delta;
-
         if (newQty <= 0) {
           return updated.filter((i) => i.id !== item.id);
-        } else {
-          updated[existingIndex] = { ...updated[existingIndex], quantity: newQty };
-          return updated;
         }
-      } else if (delta > 0) {
+        updated[existingIndex] = { ...updated[existingIndex], quantity: newQty };
+        return updated;
+      }
+      if (delta > 0) {
         return [...prevCart, { ...item, quantity: delta }];
       }
-
       return prevCart;
     });
   };
@@ -559,14 +569,11 @@ export default function App() {
       prevVendors.map((v) => {
         if (v.id !== storeId) return v;
         const updatedReviews = [newReview, ...(v.reviews || [])];
-        const avgRating = (
-          (v.rating + newReview.rating) /
-          2
-        ).toFixed(1);
+        const avgRating = ((v.rating + newReview.rating) / 2).toFixed(1);
         return {
           ...v,
           rating: Number(avgRating),
-          reviews: updatedReviews
+          reviews: updatedReviews,
         };
       })
     );
@@ -580,22 +587,23 @@ export default function App() {
     setIsCheckoutOpen(true);
   };
 
-  const handleCompleteOrder = () => {
-    const newOrder = {
-      orderId: `#LM-${Math.floor(1000 + Math.random() * 9000)}`,
+  const handleCompleteOrder = (savedOrder) => {
+    const fallbackOrder = {
+      orderId: `LM-${Date.now()}`,
       items: [...cart],
       total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
       status: "Preparing Order",
-      createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
-    setOrders((prev) => [newOrder, ...prev]);
+    const finalOrder = savedOrder || fallbackOrder;
+    setOrders((prev) => [finalOrder, ...prev.filter((o) => o.orderId !== finalOrder.orderId)]);
     setIsCheckoutOpen(false);
     setCart([]);
-    showToast(`Order ${newOrder.orderId} confirmed!`);
+    showToast(`Order ${finalOrder.orderId} confirmed!`);
     navigate("/orders");
   };
 
-  const handleAdvanceOrderStatus = (orderId) => {
+  const handleAdvanceOrderStatus = async (orderId) => {
     const flow = ["Preparing Order", "Out for Delivery", "Delivered"];
     setOrders((prev) =>
       prev.map((o) => {
@@ -604,6 +612,15 @@ export default function App() {
         return { ...o, status: flow[nextIdx] };
       })
     );
+    try {
+      await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+    } catch {
+      // Keep optimistic UI state if backend is unreachable
+    }
   };
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
@@ -718,7 +735,7 @@ export default function App() {
             }
           />
 
-          {/* Dynamic Individual Vendor Page */}
+          {/* Dynamic Store Detail Page */}
           <Route
             path="/store/:id"
             element={
@@ -762,6 +779,7 @@ export default function App() {
         onClose={() => setIsCheckoutOpen(false)}
         cart={cart}
         onCompleteOrder={handleCompleteOrder}
+        apiBase={API_BASE}
       />
 
       <footer className="bg-gray-950 border-t border-purple-950 py-6 text-center text-purple-300 text-xs font-medium">
