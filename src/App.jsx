@@ -6,7 +6,7 @@ import VendorCard from "./components/VendorCard";
 import CartDrawer from "./components/CartDrawer";
 import CheckoutModal from "./components/CheckoutModal";
 
-// Fallback seed data (your connectivity teammate will replace this with API fetch)
+// Fallback seed data (ready to swap with GET /api/vendors)
 const INITIAL_VENDORS = [
   {
     id: 1,
@@ -22,6 +22,10 @@ const INITIAL_VENDORS = [
       { id: 102, itemName: "Khara Biscuit (250g)", price: 80 },
       { id: 103, itemName: "Capsicum Veg Puff", price: 25 },
       { id: 104, itemName: "Filter Coffee Powder (200g)", price: 140 },
+    ],
+    reviews: [
+      { id: 1, user: "Karthik R.", rating: 5, comment: "Freshly baked khara biscuits right out of the oven!" },
+      { id: 2, user: "Sneha M.", rating: 5, comment: "Best evening puffs in Malleshwaram." }
     ]
   },
   {
@@ -38,6 +42,9 @@ const INITIAL_VENDORS = [
       { id: 202, itemName: "Nandi Farm Cow Milk (1L)", price: 54 },
       { id: 203, itemName: "Organic Toor Dal (1kg)", price: 165 },
       { id: 204, itemName: "Byadgi Red Chillies (250g)", price: 95 },
+    ],
+    reviews: [
+      { id: 1, user: "Ananya S.", rating: 5, comment: "Super fresh farm produce delivered in 15 mins." }
     ]
   },
   {
@@ -53,7 +60,8 @@ const INITIAL_VENDORS = [
       { id: 301, itemName: "Scooter General Service", price: 499 },
       { id: 302, itemName: "Tubeless Puncture Fix", price: 120 },
       { id: 303, itemName: "Castrol Engine Oil (1L)", price: 380 },
-    ]
+    ],
+    reviews: []
   },
   {
     id: 4,
@@ -68,7 +76,8 @@ const INITIAL_VENDORS = [
       { id: 401, itemName: "Block Print Cotton Kurti", price: 650 },
       { id: 402, itemName: "Pure Linen Dupatta", price: 350 },
       { id: 403, itemName: "Handmade Jute Tote", price: 280 },
-    ]
+    ],
+    reviews: []
   },
   {
     id: 5,
@@ -83,7 +92,8 @@ const INITIAL_VENDORS = [
       { id: 501, itemName: "65W Type-C Fast Charger", price: 450 },
       { id: 502, itemName: "Tempered Glass Screen Protector", price: 150 },
       { id: 503, itemName: "10000mAh Power Bank", price: 899 },
-    ]
+    ],
+    reviews: []
   },
   {
     id: 6,
@@ -98,13 +108,28 @@ const INITIAL_VENDORS = [
       { id: 601, itemName: "Gunpowder / Chutney Pudi (200g)", price: 90 },
       { id: 602, itemName: "Avakaya Mango Pickle (300g)", price: 130 },
       { id: 603, itemName: "Rice Sandige / Vadam (250g)", price: 85 },
-    ]
+    ],
+    reviews: []
   }
 ];
 
-// Dynamic Store Page (/store/:id) matching your dark & purple/red theme
-function StoreDetailPage({ vendors, isLoading, cart, onUpdateQuantity }) {
+// 1. Dynamic Store Detail Page (/store/:id) with Item Search, Live Reviews & Sticky Cart Bar
+function StoreDetailPage({
+  vendors,
+  isLoading,
+  cart,
+  onUpdateQuantity,
+  onAddReview,
+  onOpenCart,
+  totalCartCount,
+  totalCartAmount
+}) {
   const { id } = useParams();
+  const [itemQuery, setItemQuery] = useState("");
+  const [reviewerName, setReviewerName] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+
   const store = vendors.find((v) => String(v.id) === String(id));
 
   if (isLoading) {
@@ -142,14 +167,40 @@ function StoreDetailPage({ vendors, isLoading, cart, onUpdateQuantity }) {
     return found ? found.quantity : 0;
   };
 
+  const filteredItems = store.items.filter((item) =>
+    item.itemName.toLowerCase().includes(itemQuery.toLowerCase())
+  );
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    if (!reviewerName.trim() || !reviewComment.trim()) return;
+    onAddReview(store.id, {
+      id: Date.now(),
+      user: reviewerName.trim(),
+      rating: Number(reviewRating),
+      comment: reviewComment.trim()
+    });
+    setReviewerName("");
+    setReviewRating(5);
+    setReviewComment("");
+  };
+
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <Link
-        to="/"
-        className="inline-flex items-center text-xs font-bold text-red-400 hover:text-red-300 mb-5 transition"
-      >
-        ← BACK TO ALL STORES
-      </Link>
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+      <div className="flex items-center justify-between mb-5">
+        <Link
+          to="/"
+          className="inline-flex items-center text-xs font-bold text-red-400 hover:text-red-300 transition"
+        >
+          ← BACK TO ALL STORES
+        </Link>
+        <Link
+          to="/orders"
+          className="text-xs font-bold text-purple-400 hover:text-purple-300 transition"
+        >
+          MY ORDERS →
+        </Link>
+      </div>
 
       {/* Store Banner Card */}
       <div className="bg-gray-900 border border-purple-900/50 rounded-2xl p-6 mb-6 shadow-lg">
@@ -180,57 +231,236 @@ function StoreDetailPage({ vendors, isLoading, cart, onUpdateQuantity }) {
         </div>
       </div>
 
-      {/* Store Items List */}
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-black text-white">Available Items & Services</h2>
-        <span className="text-xs font-bold text-purple-400">
-          {store.items.length} ITEMS
-        </span>
+      {/* In-Store Search & Items Header */}
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-black text-white">Available Items & Services</h2>
+          <span className="text-xs font-bold text-purple-400">
+            SHOWING {filteredItems.length} OF {store.items.length} ITEMS
+          </span>
+        </div>
+
+        <input
+          type="text"
+          value={itemQuery}
+          onChange={(e) => setItemQuery(e.target.value)}
+          placeholder="Search inside this store..."
+          className="bg-gray-900 border border-gray-800 focus:border-purple-600 rounded-xl px-3.5 py-2 text-xs text-white placeholder-gray-500 outline-none w-full sm:w-64"
+        />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {store.items.map((item) => {
-          const qty = getItemQuantity(item.id);
-          return (
-            <div
-              key={item.id}
-              className="bg-gray-900/90 border border-gray-800 hover:border-purple-800/60 rounded-xl p-4 flex items-center justify-between transition"
-            >
-              <div>
-                <h3 className="font-bold text-white text-sm">{item.itemName}</h3>
-                <p className="text-red-400 font-black text-sm mt-1">₹{item.price}</p>
-              </div>
+      {/* Store Items Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item) => {
+            const qty = getItemQuantity(item.id);
+            return (
+              <div
+                key={item.id}
+                className="bg-gray-900/90 border border-gray-800 hover:border-purple-800/60 rounded-xl p-4 flex items-center justify-between transition"
+              >
+                <div>
+                  <h3 className="font-bold text-white text-sm">{item.itemName}</h3>
+                  <p className="text-red-400 font-black text-sm mt-1">₹{item.price}</p>
+                </div>
 
-              {qty === 0 ? (
-                <button
-                  onClick={() => onUpdateQuantity(item, 1)}
-                  className="bg-red-600 hover:bg-red-700 text-white text-xs font-black px-4 py-2 rounded-lg transition cursor-pointer"
-                >
-                  + ADD
-                </button>
-              ) : (
-                <div className="flex items-center gap-2 bg-gray-950 border border-purple-800/60 rounded-lg px-2 py-1">
-                  <button
-                    onClick={() => onUpdateQuantity(item, -1)}
-                    className="text-red-400 font-black px-2 hover:text-white cursor-pointer"
-                  >
-                    −
-                  </button>
-                  <span className="text-xs font-black text-white min-w-[16px] text-center">
-                    {qty}
-                  </span>
+                {qty === 0 ? (
                   <button
                     onClick={() => onUpdateQuantity(item, 1)}
-                    className="text-green-400 font-black px-2 hover:text-white cursor-pointer"
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs font-black px-4 py-2 rounded-lg transition cursor-pointer"
                   >
-                    +
+                    + ADD
                   </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                ) : (
+                  <div className="flex items-center gap-2 bg-gray-950 border border-purple-800/60 rounded-lg px-2 py-1">
+                    <button
+                      onClick={() => onUpdateQuantity(item, -1)}
+                      className="text-red-400 font-black px-2 hover:text-white cursor-pointer"
+                    >
+                      −
+                    </button>
+                    <span className="text-xs font-black text-white min-w-[16px] text-center">
+                      {qty}
+                    </span>
+                    <button
+                      onClick={() => onUpdateQuantity(item, 1)}
+                      className="text-green-400 font-black px-2 hover:text-white cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <div className="col-span-full text-center py-8 bg-gray-900/60 rounded-xl border border-gray-800 text-xs text-gray-400">
+            No items match "{itemQuery}" in this store.
+          </div>
+        )}
       </div>
+
+      {/* Live Community Reviews Section */}
+      <div className="bg-gray-900/80 border border-purple-900/40 rounded-2xl p-6">
+        <h3 className="text-base font-black text-white mb-4">
+          Community Reviews ({store.reviews?.length || 0})
+        </h3>
+
+        <form onSubmit={handleReviewSubmit} className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
+          <input
+            type="text"
+            value={reviewerName}
+            onChange={(e) => setReviewerName(e.target.value)}
+            placeholder="Your name"
+            className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 outline-none focus:border-purple-600"
+            required
+          />
+          <select
+            value={reviewRating}
+            onChange={(e) => setReviewRating(e.target.value)}
+            className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-purple-600"
+          >
+            <option value={5}>★★★★★ (5.0)</option>
+            <option value={4}>★★★★☆ (4.0)</option>
+            <option value={3}>★★★☆☆ (3.0)</option>
+            <option value={2}>★★☆☆☆ (2.0)</option>
+            <option value={1}>★☆☆☆☆ (1.0)</option>
+          </select>
+          <input
+            type="text"
+            value={reviewComment}
+            onChange={(e) => setReviewComment(e.target.value)}
+            placeholder="Share your experience..."
+            className="sm:col-span-2 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 outline-none focus:border-purple-600"
+            required
+          />
+          <button
+            type="submit"
+            className="sm:col-span-4 bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs py-2.5 rounded-xl transition cursor-pointer"
+          >
+            POST REVIEW
+          </button>
+        </form>
+
+        <div className="space-y-3">
+          {store.reviews && store.reviews.length > 0 ? (
+            store.reviews.map((rev) => (
+              <div
+                key={rev.id}
+                className="bg-gray-950/90 border border-gray-800 rounded-xl p-3.5"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-white">{rev.user}</span>
+                  <span className="text-xs font-black text-yellow-400">
+                    {"★".repeat(rev.rating)}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">{rev.comment}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-xs text-gray-500">
+              No reviews yet. Be the first to review {store.name}!
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Sticky Bottom Cart Bar on Store Page */}
+      {totalCartCount > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-2xl bg-gradient-to-r from-purple-900 to-red-700 border border-purple-500/40 rounded-2xl px-5 py-3.5 shadow-2xl flex items-center justify-between z-40">
+          <div>
+            <p className="text-xs font-black text-white">
+              {totalCartCount} {totalCartCount === 1 ? "ITEM" : "ITEMS"} IN CART
+            </p>
+            <p className="text-sm font-black text-yellow-300">₹{totalCartAmount}</p>
+          </div>
+          <button
+            onClick={onOpenCart}
+            className="bg-black hover:bg-gray-900 text-white text-xs font-black px-4 py-2.5 rounded-xl transition cursor-pointer"
+          >
+            VIEW CART & CHECKOUT →
+          </button>
+        </div>
+      )}
+    </main>
+  );
+}
+
+// 2. Dynamic Live Order Tracking Page (/orders)
+function OrdersPage({ orders, onAdvanceOrderStatus }) {
+  return (
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="flex items-center justify-between mb-6 border-b border-gray-800 pb-3">
+        <div>
+          <h1 className="text-2xl font-black text-white tracking-tight">Your Live Orders</h1>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Real-time order receipts and Bengaluru delivery status
+          </p>
+        </div>
+        <Link to="/" className="text-xs font-bold text-red-400 hover:underline">
+          ← BACK TO STORES
+        </Link>
+      </div>
+
+      {orders.length === 0 ? (
+        <div className="bg-gray-900 border border-purple-900/40 rounded-2xl p-10 text-center">
+          <p className="text-gray-400 font-bold mb-3">No orders placed yet.</p>
+          <Link
+            to="/"
+            className="inline-block bg-red-600 hover:bg-red-700 text-white text-xs font-black px-5 py-2.5 rounded-xl transition"
+          >
+            EXPLORE STORES
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <div
+              key={order.orderId}
+              className="bg-gray-900 border border-purple-900/50 rounded-2xl p-5 shadow-md"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-3 mb-3">
+                <div>
+                  <span className="text-sm font-black text-purple-400">{order.orderId}</span>
+                  <p className="text-[11px] text-gray-500">Placed at {order.createdAt}</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-green-950 text-green-400 border border-green-800/60">
+                    ● {order.status}
+                  </span>
+                  {order.status !== "Delivered" && (
+                    <button
+                      onClick={() => onAdvanceOrderStatus(order.orderId)}
+                      className="text-[11px] font-bold bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded-lg transition cursor-pointer"
+                      title="Simulate next delivery step"
+                    >
+                      Simulate Step →
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5 mb-3">
+                {order.items.map((item) => (
+                  <div key={item.id} className="flex justify-between text-xs text-gray-300">
+                    <span>
+                      {item.itemName} <span className="text-gray-500">× {item.quantity}</span>
+                    </span>
+                    <span className="font-bold">₹{item.price * item.quantity}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t border-gray-800 flex justify-between items-center text-sm font-black">
+                <span className="text-gray-400">Total Paid</span>
+                <span className="text-red-400">₹{order.total}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
@@ -243,8 +473,9 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
-  // Simulate dynamic API loading (Connectivity teammate will swap this with fetch('/api/vendors'))
+  // Simulate dynamic API fetch (Connectivity teammate will swap with fetch('/api/vendors'))
   useEffect(() => {
     const timer = setTimeout(() => {
       setVendors(INITIAL_VENDORS);
@@ -253,7 +484,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Initialize cart from localStorage so items persist on refresh
+  // Initialize cart from localStorage
   const [cart, setCart] = useState(() => {
     try {
       const savedCart = localStorage.getItem("locomrkt_cart");
@@ -263,7 +494,16 @@ export default function App() {
     }
   });
 
-  // Sync cart changes with localStorage
+  // Initialize orders from localStorage
+  const [orders, setOrders] = useState(() => {
+    try {
+      const savedOrders = localStorage.getItem("locomrkt_orders");
+      return savedOrders ? JSON.parse(savedOrders) : [];
+    } catch {
+      return [];
+    }
+  });
+
   useEffect(() => {
     try {
       localStorage.setItem("locomrkt_cart", JSON.stringify(cart));
@@ -272,7 +512,27 @@ export default function App() {
     }
   }, [cart]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem("locomrkt_orders", JSON.stringify(orders));
+    } catch (err) {
+      console.error("Could not save orders to localStorage", err);
+    }
+  }, [orders]);
+
+  // Toast helper
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? "" : prev));
+    }, 2200);
+  };
+
   const handleUpdateQuantity = (item, delta) => {
+    if (delta > 0) {
+      showToast(`Added ${item.itemName} to cart`);
+    }
+
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex((i) => i.id === item.id);
 
@@ -294,6 +554,25 @@ export default function App() {
     });
   };
 
+  const handleAddReview = (storeId, newReview) => {
+    setVendors((prevVendors) =>
+      prevVendors.map((v) => {
+        if (v.id !== storeId) return v;
+        const updatedReviews = [newReview, ...(v.reviews || [])];
+        const avgRating = (
+          (v.rating + newReview.rating) /
+          2
+        ).toFixed(1);
+        return {
+          ...v,
+          rating: Number(avgRating),
+          reviews: updatedReviews
+        };
+      })
+    );
+    showToast("Review posted!");
+  };
+
   const handleClearCart = () => setCart([]);
 
   const handleOpenCheckout = () => {
@@ -302,11 +581,33 @@ export default function App() {
   };
 
   const handleCompleteOrder = () => {
+    const newOrder = {
+      orderId: `#LM-${Math.floor(1000 + Math.random() * 9000)}`,
+      items: [...cart],
+      total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      status: "Preparing Order",
+      createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    };
+    setOrders((prev) => [newOrder, ...prev]);
     setIsCheckoutOpen(false);
     setCart([]);
+    showToast(`Order ${newOrder.orderId} confirmed!`);
+    navigate("/orders");
+  };
+
+  const handleAdvanceOrderStatus = (orderId) => {
+    const flow = ["Preparing Order", "Out for Delivery", "Delivered"];
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.orderId !== orderId) return o;
+        const nextIdx = Math.min(flow.indexOf(o.status) + 1, flow.length - 1);
+        return { ...o, status: flow[nextIdx] };
+      })
+    );
   };
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const totalCartAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const filteredVendors = vendors.filter((vendor) => {
     const matchesSearch =
@@ -322,7 +623,15 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col justify-between font-sans">
+    <div className="min-h-screen bg-black text-white flex flex-col justify-between font-sans relative">
+      {/* Live Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-20 right-4 z-50 bg-gray-900 border border-purple-500 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2">
+          <span className="text-green-400">✓</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       <div>
         <Navbar
           cartCount={totalCartCount}
@@ -330,7 +639,7 @@ export default function App() {
         />
 
         <Routes>
-          {/* Main Marketplace View */}
+          {/* Main Marketplace Route */}
           <Route
             path="/"
             element={
@@ -346,9 +655,19 @@ export default function App() {
                   <h2 className="text-xl font-black text-white tracking-tight">
                     Bengaluru Community Vendors
                   </h2>
-                  <span className="text-xs font-bold text-red-500">
-                    {isLoading ? "LOADING STORES..." : `${filteredVendors.length} STORES ONLINE`}
-                  </span>
+                  <div className="flex items-center gap-4">
+                    <Link
+                      to="/orders"
+                      className="text-xs font-bold text-purple-400 hover:text-purple-300"
+                    >
+                      ORDERS ({orders.length})
+                    </Link>
+                    <span className="text-xs font-bold text-red-500">
+                      {isLoading
+                        ? "LOADING STORES..."
+                        : `${filteredVendors.length} STORES ONLINE`}
+                    </span>
+                  </div>
                 </div>
 
                 {isLoading ? (
@@ -408,6 +727,21 @@ export default function App() {
                 isLoading={isLoading}
                 cart={cart}
                 onUpdateQuantity={handleUpdateQuantity}
+                onAddReview={handleAddReview}
+                onOpenCart={() => setIsCartOpen(true)}
+                totalCartCount={totalCartCount}
+                totalCartAmount={totalCartAmount}
+              />
+            }
+          />
+
+          {/* Dynamic Live Order Tracking Page */}
+          <Route
+            path="/orders"
+            element={
+              <OrdersPage
+                orders={orders}
+                onAdvanceOrderStatus={handleAdvanceOrderStatus}
               />
             }
           />
