@@ -1,17 +1,43 @@
 ﻿import React, { useState } from "react";
 
-export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder }) {
+export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder, apiBase = "http://localhost:5000" }) {
   const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
   if (!isOpen) return null;
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const totalItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const orderId = "LCO-" + Math.floor(100000 + Math.random() * 900000);
+
+  async function handleConfirmOrder() {
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch(`${apiBase}/api/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paymentMethod,
+          items: cart,
+          totalAmount: subtotal,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      onCompleteOrder();
+    } catch (err) {
+      setError(err.message || "Failed to place order");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div className="bg-gray-900 border border-purple-950 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
-        
         {/* Header */}
         <div className="bg-purple-950/80 p-6 text-center border-b border-purple-900/40">
           <div className="w-10 h-10 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-2 text-lg font-bold border border-green-500/30">
@@ -63,7 +89,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder }
                     : "bg-gray-950 border-gray-800 text-gray-400 hover:text-white"
                 }`}
               >
-                💵 Cash on Delivery
+                Cash on Delivery
               </button>
               <button
                 type="button"
@@ -74,22 +100,29 @@ export default function CheckoutModal({ isOpen, onClose, cart, onCompleteOrder }
                     : "bg-gray-950 border-gray-800 text-gray-400 hover:text-white"
                 }`}
               >
-                📱 Pay via UPI
+                Pay via UPI
               </button>
             </div>
           </div>
+
+          {error && (
+            <div className="p-2.5 rounded-xl bg-red-950/60 border border-red-800 text-red-200 text-xs font-semibold">
+              {error}
+            </div>
+          )}
         </div>
 
         {/* Actions */}
         <div className="p-4 bg-gray-950 border-t border-gray-800">
           <button
-            onClick={onCompleteOrder}
-            className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition uppercase tracking-wider"
+            type="button"
+            disabled={isSubmitting}
+            onClick={handleConfirmOrder}
+            className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-xs transition uppercase tracking-wider"
           >
-            Confirm & Return to Directory
+            {isSubmitting ? "Placing Order..." : "Confirm & Return to Directory"}
           </button>
         </div>
-
       </div>
     </div>
   );

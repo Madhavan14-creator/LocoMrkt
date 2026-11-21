@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "orderId": "LM-1795245723537",
+    "customerName": "Guest Customer",
+    "customerPhone": "Not Provided",
+    "address": "Local Pickup",
+    "paymentMethod": "COD",
+    "items": [
+      {
+        "id": 101,
+        "itemName": "Special Milk Bread",
+        "price": 45,
+        "storeName": "Iyengar Bakery & Sweets",
+        "category": "Bakery",
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 45,
+    "status": "CONFIRMED",
+    "createdAt": "2026-11-21T07:22:03.538Z"
+  }
+]
